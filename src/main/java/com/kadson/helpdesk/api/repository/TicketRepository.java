@@ -1,25 +1,27 @@
 package com.kadson.helpdesk.api.repository;
 
-import java.awt.print.Pageable;
-
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+
 
 import com.kadson.helpdesk.api.entity.Ticket;
 
 public interface TicketRepository extends MongoRepository<Ticket, String> {
 	
-	Page<Ticket> findByUserIdOrderByDateDesc(Pageable pages, String usuarioId);
+   Page<Ticket> findByUsuarioIdOrderByDataDesc(Pageable pages,String userId);
 	
-	Page<Ticket> findByTitleIgnoreCaseContainingAndStatusAndPrioridadeOrderByDateDesc(
-			String title, String status, String prioridade, Pageable pages);
+	Page<Ticket> findByTituloIgnoreCaseContainingAndStatusIgnoreCaseContainingAndPrioridadeIgnoreCaseContainingOrderByDataDesc(
+			String titulo,String status,String prioridade,Pageable pages);
 	
-	Page<Ticket> findByTitleIgnoreCaseContainingAndStatusAndPrioridadeAndUsuarioIdOrderByDateDesc(
-			String title, String status, String prioridade, Pageable pages);
+	Page<Ticket> findByTituloIgnoreCaseContainingAndStatusIgnoreCaseContainingAndPrioridadeIgnoreCaseContainingAndUsuarioIdOrderByDataDesc(
+			String titulo,String status,String prioridade,String usuarioId,Pageable pages);
 	
-	Page<Ticket> findByTitleIgnoreCaseContainingAndStatusAndPrioridadeAndAssignedUserIdOrderByDateDesc(
-			String title, String status, String prioridade, Pageable pages);
+	Page<Ticket> findByNumero(Integer numero,Pageable pages);
 	
-	Page<Ticket> findByNumber(Integer number, Pageable pages);
+	Page<Ticket> findByTituloIgnoreCaseContainingAndStatusIgnoreCaseContainingAndPrioridadeIgnoreCaseContainingAndAssignUserOrderByDataDesc(
+			String titulo,String status,String prioridade,String assignUser,Pageable pages);
+	
+	
 
 }

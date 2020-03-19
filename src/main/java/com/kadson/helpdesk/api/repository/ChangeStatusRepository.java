@@ -6,6 +6,6 @@ import com.kadson.helpdesk.api.entity.ChangeStatus;
 
 public interface ChangeStatusRepository extends MongoRepository<ChangeStatus , String> {
 	
-	Iterable<ChangeStatus> findByTicketIdOrderByDateStatusDesc(String ticketId);
+	Iterable<ChangeStatus> findByTicketIdOrderByDataChangeStatusDesc(String ticketId);
 	
 }
