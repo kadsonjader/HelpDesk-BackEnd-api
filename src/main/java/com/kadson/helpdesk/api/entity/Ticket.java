@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -30,6 +31,8 @@ public class Ticket {
 	
 	private String descricao;
 	private String imagem;
+	
+	@Transient
 	private List<ChangeStatus> alteracoes;
 	
 	public String getId() {
