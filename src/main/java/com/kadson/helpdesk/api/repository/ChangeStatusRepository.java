@@ -1,5 +1,11 @@
 package com.kadson.helpdesk.api.repository;
 
-public interface ChangeStatusRepository {
+import org.springframework.data.mongodb.repository.MongoRepository;
 
+import com.kadson.helpdesk.api.entity.ChangeStatus;
+
+public interface ChangeStatusRepository extends MongoRepository<ChangeStatus , String> {
+	
+	Iterable<ChangeStatus> findByTicketIdOrderByDateStatusDesc(String ticketId);
+	
 }
