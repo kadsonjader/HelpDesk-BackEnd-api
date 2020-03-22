@@ -1,7 +1,12 @@
 package com.kadson.helpdesk.api.controller;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
+import com.kadson.helpdesk.api.entity.ChangeStatus;
 import com.kadson.helpdesk.api.entity.Ticket;
 import com.kadson.helpdesk.api.entity.Usuario;
 import com.kadson.helpdesk.api.enums.StatusEnum;
@@ -44,6 +49,8 @@ public class TicketController {
 	@Autowired
 	private UsuarioService usuarioService;
 	
+	@PostMapping
+	@PreAuthorize("hasAnyRole('CLIENTE')")
 	public ResponseEntity<Response<Ticket>> createOrUpdate(HttpServletRequest request, @RequestBody Ticket ticket, BindingResult result){
 		Response<Ticket> response = new Response<Ticket>();		
 		try {
@@ -83,5 +90,79 @@ public class TicketController {
 		Random random = new Random();
 		return random.nextInt(9999);
 	}
-
+	
+	@PutMapping()
+	@PreAuthorize("hasAnyRole('CLIENTE')")
+	public ResponseEntity<Response<Ticket>> update(HttpServletRequest request, @RequestBody Ticket ticket, BindingResult result){
+		Response<Ticket> response = new Response<Ticket>();		
+		try {
+			validateUpdateTicket(ticket, result);
+			if(result.hasErrors()) {
+				result.getAllErrors().forEach(error -> response.getErrors().add(error.getDefaultMessage()));
+				return ResponseEntity.badRequest().body(response);
+			}
+			Optional<Ticket> ticketCurrentOptional = ticketService.findById(ticket.getId());
+			Ticket ticketCurrent = ticketCurrentOptional.get();
+			ticket.setStatus(ticketCurrent.getStatus());
+			ticket.setUsuario(ticketCurrent.getUsuario());
+			ticket.setData(ticketCurrent.getData());
+			ticket.setNumero(ticketCurrent.getNumero());
+			if(ticketCurrent.getAssignUser() != null){
+				ticket.setAssignUser(ticketCurrent.getAssignUser());
+			}
+			Ticket ticketPersisted = (Ticket) ticketService.createOrUpdate(ticket);
+			response.setData(ticketPersisted);
+		}catch(Exception e) {
+			response.getErrors().add(e.getMessage());
+			return ResponseEntity.badRequest().body(response);
+		}
+		return ResponseEntity.ok(response);
+	}
+	
+	private void validateUpdateTicket(Ticket ticket, BindingResult result) {
+		if(ticket.getId() == null) {
+			result.addError(new ObjectError("Ticket", "Id não informado"));
+			return;
+		}
+		if(ticket.getTitulo() == null) {
+			result.addError(new ObjectError("Ticket", "Titulo não informado"));
+			return;
+		}
+	}
+	
+	@GetMapping(value = "{id}")
+	@PreAuthorize("hasAnyRole('CLIENTE','TECNICO')")
+	public ResponseEntity<Response<Ticket>> findById(@PathVariable("id") String id){
+		Response<Ticket> response = new Response<Ticket>();
+		Optional<Ticket> ticketOptional = ticketService.findById(id);
+		Ticket ticket = ticketOptional.get();
+		if(ticket == null) {
+			response.getErrors().add("Registro não encontrado id: "+id);
+			return ResponseEntity.badRequest().body(response);
+		}
+		List<ChangeStatus> changes = new ArrayList<ChangeStatus>();
+		Iterable<ChangeStatus> changesCurrent =  ticketService.listChangeStatus(ticket.getId());
+		for (Iterator<ChangeStatus> iterator = changesCurrent.iterator(); iterator.hasNext();) {
+			ChangeStatus changeStatus = iterator.next();
+			changeStatus.setTicket(null);
+			changes.add(changeStatus);
+		}	
+		ticket.setAlteracoes(changes);
+		response.setData(ticket);
+		return ResponseEntity.ok(response);
+	}
+	
+	@DeleteMapping(value = "/{id}")
+	@PreAuthorize("hasAnyRole('CLIENTE')")
+	public ResponseEntity<Response<String>> delete(@PathVariable("id") String id) {
+		Response<String> response = new Response<String>();
+		Optional<Ticket> ticketOptional = ticketService.findById(id);
+		Ticket ticket = ticketOptional.get();
+		if (ticket == null) {
+			response.getErrors().add("Registro não encontrado id:" + id);
+			return ResponseEntity.badRequest().body(response);
+		}
+		ticketService.delete(id);
+		return ResponseEntity.ok(new Response<String>());
+	}
 }
