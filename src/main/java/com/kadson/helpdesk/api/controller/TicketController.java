@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kadson.helpdesk.api.entity.ChangeStatus;
 import com.kadson.helpdesk.api.entity.Ticket;
 import com.kadson.helpdesk.api.entity.Usuario;
+import com.kadson.helpdesk.api.enums.PerfilEnum;
 import com.kadson.helpdesk.api.enums.StatusEnum;
 import com.kadson.helpdesk.api.response.Response;
 import com.kadson.helpdesk.api.security.jwt.JwtTokenUtil;
@@ -152,7 +153,7 @@ public class TicketController {
 		return ResponseEntity.ok(response);
 	}
 	
-	@DeleteMapping(value = "/{id}")
+	@DeleteMapping(value = "{id}")
 	@PreAuthorize("hasAnyRole('CLIENTE')")
 	public ResponseEntity<Response<String>> delete(@PathVariable("id") String id) {
 		Response<String> response = new Response<String>();
@@ -165,4 +166,54 @@ public class TicketController {
 		ticketService.delete(id);
 		return ResponseEntity.ok(new Response<String>());
 	}
+	
+	@GetMapping(value = "{page}/{count}")
+	@PreAuthorize("hasAnyRole('CLIENTE','TECNICO')")
+	public ResponseEntity<Response<Page<Ticket>>> findAll(HttpServletRequest request, @PathVariable("page") int page, @PathVariable("count") int count) {
+		Response<Page<Ticket>> response = new Response<Page<Ticket>>();
+		Page<Ticket> tickets = null;
+		Usuario usuarioRequest = userFromRequest(request);
+		if(usuarioRequest.getProfile().equals(PerfilEnum.ROLE_TECNICO)) {
+			tickets = ticketService.listTicket(page, count);
+		}else if(usuarioRequest.getProfile().equals(PerfilEnum.ROLE_CLIENTE)) {
+			tickets = ticketService.findByCurrentUsuario(page, count, usuarioRequest.getId());
+		}
+		response.setData(tickets);
+		return ResponseEntity.ok(response);
+	}
+	
+	@GetMapping(value = "{page}/{count}/{numero}/{titulo}/{status}/{orioridade}/{assigned}")
+	@PreAuthorize("hasAnyRole('CLIENTE','TECNICO')")
+	public ResponseEntity<Response<Page<Ticket>>> findByParams(HttpServletRequest request, 
+															   @PathVariable("page") int page, 
+															   @PathVariable("count") int count,
+															   @PathVariable("count") Integer numero,
+															   @PathVariable("count") String titulo,
+															   @PathVariable("count") String status,
+															   @PathVariable("count") String prioridade,
+															   @PathVariable("count") boolean assigned) {
+		titulo = titulo.equals("uninformed") ? "" : titulo;
+		status = status.equals("uninformed") ? "" : status;
+		prioridade = prioridade.equals("uninformed") ? "" : prioridade;
+		
+		Response<Page<Ticket>> response = new Response<Page<Ticket>>();
+		Page<Ticket> tickets = null;
+		if(numero > 0) {
+			tickets = ticketService.findByNumero(page, count, numero);
+		} else {
+			Usuario usuarioRequest = userFromRequest(request);
+			if(usuarioRequest.getProfile().equals(PerfilEnum.ROLE_TECNICO)) {
+				if(assigned) {
+					tickets = ticketService.findByParameterAndAssignedUsuario(page, count, titulo, status, prioridade, usuarioRequest.getId());					
+				} else {
+					tickets = ticketService.findByParameters(page, count, titulo, status, prioridade);
+				}
+			} else if(usuarioRequest.getProfile().equals(PerfilEnum.ROLE_CLIENTE)) {
+				tickets = ticketService.findByParametersAndCurrentUsuario(page, count, titulo, status, prioridade, usuarioRequest.getId());
+			}
+		}
+		response.setData(tickets);
+		return ResponseEntity.ok(response);
+	}
+
 }
