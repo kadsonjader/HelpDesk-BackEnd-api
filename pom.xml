@@ -20,6 +20,13 @@
 		 <jjwt.version>0.7.0</jjwt.version>
 		<java.version>1.8</java.version>
 	</properties>
+	<repositories>
+    	<repository>
+        	<id>jcenter-snapshots</id>
+        	<name>jcenter</name>
+        	<url>http://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
+    	</repository>
+	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -38,7 +45,7 @@
         	<groupId>org.springframework.boot</groupId>
         	<artifactId>spring-boot-starter-tomcat</artifactId>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -66,6 +73,21 @@
             <artifactId>jjwt</artifactId>
             <version>${jjwt.version}</version>
         </dependency>
+        <dependency>
+    		<groupId>io.springfox</groupId>
+    		<artifactId>springfox-swagger2</artifactId>
+    		<version>3.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+    		<groupId>io.springfox</groupId>
+    		<artifactId>springfox-data-rest</artifactId>
+    		<version>3.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>2.9.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
