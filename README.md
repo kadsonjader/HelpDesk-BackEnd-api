@@ -6,7 +6,7 @@
 
 ![N|Solid](https://img.shields.io/badge/Version-1.0-brightgreen)
 
-![N|Solid](https://img.shields.io/badge/status-Development-brightgreen)
+![N|Solid](https://img.shields.io/badge/status-Finished-brightgreen)
 
 _Projeto de controle de chamados e incidentes de computadores e informatica e afins_
 
